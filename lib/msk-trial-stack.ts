@@ -22,6 +22,8 @@ export class MskTrialStack extends Stack {
     const cluster = new msk.Cluster(this, "Cluster", {
       clusterName: 'myclusterviasimplecdk',
       kafkaVersion: msk.KafkaVersion.V2_8_1,
+      // デフォルトではkafka.m5.largeで作成されるため、最小のインスタンスサイズを指定
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
       // brokerにはec2インスタンスを使用するため、mskはvpc内に作成する
       vpc: vpc,
       ebsStorageInfo: {
