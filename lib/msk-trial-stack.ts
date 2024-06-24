@@ -22,6 +22,7 @@ export class MskTrialStack extends Stack {
     const cluster = new msk.Cluster(this, "Cluster", {
       clusterName: 'myclusterviasimplecdk',
       kafkaVersion: msk.KafkaVersion.V2_8_1,
+      // brokerにはec2インスタンスを使用するため、mskはvpc内に作成する
       vpc: vpc,
       ebsStorageInfo: {
         volumeSize: 50,
@@ -30,7 +31,7 @@ export class MskTrialStack extends Stack {
 
 
     let transactionHandler = new NodejsFunction(this, "TransactionHandler", {
-      runtime: Runtime.NODEJS_14_X,
+      runtime: Runtime.NODEJS_20_X,
       entry: 'lambda/transaction-handler.js',
       handler: 'handler',
       vpc: vpc,
@@ -38,8 +39,7 @@ export class MskTrialStack extends Stack {
       timeout: Duration.minutes(1),
     });
 
-
-    // Allow lambda to interact with MSK
+    // lambdaにmskへの権限を付与
     transactionHandler.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         'service-role/AWSLambdaMSKExecutionRole',
@@ -50,11 +50,11 @@ export class MskTrialStack extends Stack {
       clusterArn: cluster.clusterArn,
       topic: topicName,
       batchSize: 100, // default
+      // lambdaがmskのイベントをどこから処理するかを決める値
       startingPosition: lambda.StartingPosition.LATEST
     }));
 
-    // It was found that MSK needs to allow inbound traffic from anywhere on all ports.
+    // 全てのportからのトラフィックを許可
     cluster.connections.allowFromAnyIpv4(ec2.Port.allTraffic(), "allow all from anywhere");
-
   }
 }
