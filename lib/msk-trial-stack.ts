@@ -32,7 +32,7 @@ export class MskTrialStack extends Stack {
 
     let transactionHandler = new NodejsFunction(this, "TransactionHandler", {
       runtime: Runtime.NODEJS_20_X,
-      entry: 'lambda/transaction-handler.js',
+      entry: 'lambda/transaction-handler.ts',
       handler: 'handler',
       vpc: vpc,
       functionName: 'TransactionHandler',
